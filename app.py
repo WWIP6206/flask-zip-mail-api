@@ -16,7 +16,7 @@ def extract_id_from_url(url):
 @app.route("/make_zip", methods=["POST"])
 def make_zip_from_spreadsheet():
     try:
-        # ✅ request.get_json() に戻す！
+        # ❗ request.get_json() だけにする。json.loads しない。
         data = request.get_json()
     except Exception as e:
         return jsonify({"error": f"Invalid JSON: {str(e)}"}), 400
