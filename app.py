@@ -6,11 +6,9 @@ import tempfile
 import os
 import re
 import base64
-import json
 
 app = Flask(__name__)
 
-# GoogleスプレッドシートのURLからIDを抽出する関数
 def extract_id_from_url(url):
     match = re.search(r"/spreadsheets/d/([a-zA-Z0-9-_]+)", url)
     return match.group(1) if match else None
@@ -18,9 +16,8 @@ def extract_id_from_url(url):
 @app.route("/make_zip", methods=["POST"])
 def make_zip_from_spreadsheet():
     try:
-        # Windows curlやrequestsで壊れる対策 → 生データをdecodeしてJSON化
-        raw = request.data.decode('utf-8')
-        data = json.loads(raw)
+        # ✅ request.get_json() に戻す！
+        data = request.get_json()
     except Exception as e:
         return jsonify({"error": f"Invalid JSON: {str(e)}"}), 400
 
@@ -62,3 +59,4 @@ def make_zip_from_spreadsheet():
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000)
+
