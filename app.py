@@ -6,6 +6,7 @@ import tempfile
 import os
 import re
 import base64
+import json
 
 app = Flask(__name__)
 
@@ -14,12 +15,12 @@ def extract_id_from_url(url):
     match = re.search(r"/spreadsheets/d/([a-zA-Z0-9-_]+)", url)
     return match.group(1) if match else None
 
-# ZIPファイルを作成するエンドポイント
 @app.route("/make_zip", methods=["POST"])
 def make_zip_from_spreadsheet():
     try:
-        # JSONを強制的に取得
-        data = request.get_json(force=True)
+        # Windows curlやrequestsで壊れる対策 → 生データをdecodeしてJSON化
+        raw = request.data.decode('utf-8')
+        data = json.loads(raw)
     except Exception as e:
         return jsonify({"error": f"Invalid JSON: {str(e)}"}), 400
 
@@ -34,7 +35,6 @@ def make_zip_from_spreadsheet():
         return jsonify({"error": "Invalid spreadsheet URL"}), 400
 
     try:
-        # Google Sheets 認証
         gc = gspread.service_account(filename="/etc/secrets/credentials.json")
         sh = gc.open_by_key(spreadsheet_id)
         worksheet = sh.sheet1
@@ -62,4 +62,3 @@ def make_zip_from_spreadsheet():
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000)
-
